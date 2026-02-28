@@ -2,6 +2,7 @@
 // nuevo-ensayo.js — Crear Ensayo con Stepper
 // ============================================
 import * as storage from '../js/storage.js';
+import { generarPautaDesdeImagenes } from '../js/openai-service.js';
 
 export function render() {
   const cursos = storage.getCursos();
@@ -101,6 +102,23 @@ export function render() {
         <div class="step-content" id="step3" style="display: none;">
           <h3 class="card-title" style="margin-bottom: 0.25rem;">Clave de Respuestas</h3>
           <p style="color: var(--text-secondary); font-size: var(--fs-sm); margin-bottom: 1rem;">Define la respuesta correcta, contenido y habilidad de cada pregunta.</p>
+          
+          <div style="background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--accent); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+             <div>
+               <h4 style="color: var(--accent); font-weight: 600; font-size: var(--fs-sm); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                 Magia de Inteligencia Artificial
+               </h4>
+               <p style="color: var(--text-secondary); font-size: 11px;">Sube el PDF o una foto de la prueba y la IA creará la pauta completa por ti.</p>
+             </div>
+             <div>
+               <input type="file" id="inputFileIA" accept=".pdf,image/png,image/jpeg,image/webp" style="display: none;" />
+               <button class="btn btn-primary btn-sm" id="btnGenerarPautaIA" style="background: linear-gradient(135deg, var(--accent) 0%, #d946ef 100%); border: none;">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                 Subir Archivo y Generar
+               </button>
+             </div>
+          </div>
           
           <div class="table-container" style="max-height: 500px; overflow-y: auto;">
             <table>
@@ -233,6 +251,109 @@ export function init(navigateTo, showToast) {
     buildClaveTable(total, importedClaveRespuestas);
     showStep(3);
   });
+
+  // ---- Generar Pauta con IA (Vision) ----
+  const btnGenerarPautaIA = document.getElementById('btnGenerarPautaIA');
+  const inputFileIA = document.getElementById('inputFileIA');
+
+  btnGenerarPautaIA?.addEventListener('click', () => {
+    if (!storage.getOpenAIApiKey()) {
+      showToast('Configura tu llave de OpenAI (⚙️ arriba a la derecha) para usar la Corrección con IA.', 'error');
+      return;
+    }
+    inputFileIA.click();
+  });
+
+  inputFileIA?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    btnGenerarPautaIA.disabled = true;
+    const oldHtml = btnGenerarPautaIA.innerHTML;
+    btnGenerarPautaIA.innerHTML = '⏳ Procesando documento...';
+
+    try {
+      const totalPreguntas = parseInt(document.getElementById('inputTotalPreguntas').value) || 30;
+      let imagenesBase64 = [];
+
+      if (file.type === 'application/pdf') {
+        showToast('Leyendo PDF y convirtiendo a imágenes...', 'info');
+        const arrayBuffer = await file.arrayBuffer();
+
+        // Wait for pdfjsLib from CDN
+        if (typeof window.pdfjsLib === 'undefined') {
+          throw new Error('La librería PDF.js no ha cargado aún. Intenta nuevamente.');
+        }
+
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+
+        // Limitamos a 6 páginas para evitar superar payload o gastar tokens extra
+        const maxPages = Math.min(pdf.numPages, 6);
+
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          imagenesBase64.push(canvas.toDataURL('image/jpeg', 0.8));
+        }
+      } else if (file.type.startsWith('image/')) {
+        imagenesBase64.push(await fileToBase64(file));
+      } else {
+        throw new Error('Formato de archivo no soportado. Usa PDF o imágenes (JPG, PNG).');
+      }
+
+      showToast(`Analizando ${imagenesBase64.length} imágenes con GPT-4 Vision...`, 'info');
+      const pautaExtraida = await generarPautaDesdeImagenes(imagenesBase64, totalPreguntas);
+
+      if (Array.isArray(pautaExtraida)) {
+        let insertadas = 0;
+        pautaExtraida.forEach(item => {
+          if (!item.p) return;
+          const respSelect = document.querySelector(`.clave-resp[data-pregunta="${item.p}"]`);
+          if (respSelect && item.respuestaCorrecta) {
+            respSelect.value = item.respuestaCorrecta.toUpperCase();
+            insertadas++;
+          }
+
+          const contSelect = document.querySelector(`.clave-cont[data-pregunta="${item.p}"]`);
+          if (contSelect && item.contenido) {
+            const exists = Array.from(contSelect.options).find(o => o.value.toLowerCase() === item.contenido.toLowerCase());
+            if (exists) contSelect.value = exists.value;
+          }
+
+          const habSelect = document.querySelector(`.clave-hab[data-pregunta="${item.p}"]`);
+          if (habSelect && item.habilidad) {
+            const exists = Array.from(habSelect.options).find(o => o.value.toLowerCase() === item.habilidad.toLowerCase());
+            if (exists) habSelect.value = exists.value;
+          }
+        });
+        showToast(`¡Completado! Se determinaron ${insertadas} claves correctas.`, 'success');
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast(err.message, 'error');
+    } finally {
+      inputFileIA.value = '';
+      btnGenerarPautaIA.disabled = false;
+      btnGenerarPautaIA.innerHTML = oldHtml;
+    }
+  });
+
+  function fileToBase64(f) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(f);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
 
   // Build answer key table
   function buildClaveTable(total, importedClave = null) {
