@@ -199,142 +199,151 @@ export function init(navigateTo, showToast) {
 
   let saveTimeout = null;
 
-  // ---- Audio Dictation (Whisper) ----
-  const dictarBtns = document.querySelectorAll('.btn-dictar');
-  dictarBtns.forEach(btn => {
-    let recording = false;
+  const gridContainer = document.querySelector('.tab-grid-container');
+  if (!gridContainer) return;
 
-    btn.addEventListener('click', async () => {
-      if (!recording) {
-        // Check if API key exists first
-        if (!storage.getOpenAIApiKey()) {
-          showToast('Configura tu llave de OpenAI (⚙️ arriba a la derecha) para usar la Corrección por Voz.', 'error');
-          return;
-        }
-        const success = await startRecording();
-        if (success) {
-          recording = true;
-          btn.classList.add('recording-active');
-          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect></svg>`;
-          showToast('🎤 Escuchando... Haz clic de nuevo para detener y procesar.', 'info');
-        } else {
-          showToast('No se pudo acceder al micrófono.', 'error');
-        }
-      } else {
-        // Stop recording
-        recording = false;
-        btn.classList.remove('recording-active');
-        btn.style.opacity = '0.5';
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`; // Clock/wait icon
+  // Track the recording state for each student globally or assume one dictation at a time
+  // For simplicity, we only allow one dictation active globally
+  let activeMicBtn = null;
 
-        showToast('🧠 Procesando dictado con IA (Whisper)...', 'info');
+  gridContainer.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-dictar');
+    if (!btn) return;
 
-        try {
-          const audioBlob = await stopRecording();
-          if (audioBlob) {
-            const jsonArr = await processDictation(audioBlob, ensayo.totalPreguntas);
-            if (Array.isArray(jsonArr)) {
-              const alumnoId = btn.dataset.alumno;
-              let dictadas = 0;
-              jsonArr.forEach(item => {
-                if (item.p && typeof item.r === 'string') {
-                  const c = document.querySelector(`.tab-cell[data-alumno="${alumnoId}"][data-pregunta="${item.p}"]`);
-                  if (c) {
-                    c.value = item.r.toUpperCase();
-                    c.dispatchEvent(new Event('input')); // Triggers color change and autosave
-                    dictadas++;
-                  }
-                }
-              });
-              showToast(`¡Dictado procesado! ${dictadas} respuestas asignadas.`, 'success');
-            }
-          }
-        } catch (error) {
-          showToast(error.message, 'error');
-        } finally {
-          btn.style.opacity = '1';
-          // Reset to mic icon
-          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`;
-        }
-      }
-    });
-  });
+    if (activeMicBtn && activeMicBtn !== btn) {
+      showToast('Ya hay una grabación en progreso.', 'warning');
+      return;
+    }
 
-  // Handle cell input
-  const cells = document.querySelectorAll('.tab-cell');
-  cells.forEach(cell => {
-    cell.addEventListener('keydown', (e) => {
-      const validKeys = ['a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E'];
-
-      if (validKeys.includes(e.key)) {
-        e.preventDefault();
-        cell.value = e.key.toUpperCase();
-        cell.dispatchEvent(new Event('input'));
-        // Move to next cell
-        moveToNextCell(cell);
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        cell.value = '';
-        cell.dispatchEvent(new Event('input'));
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        if (e.shiftKey) moveToPrevCell(cell);
-        else moveToNextCell(cell);
-      } else if (e.key === 'ArrowRight') {
-        moveToNextCell(cell);
-      } else if (e.key === 'ArrowLeft') {
-        moveToPrevCell(cell);
-      } else if (e.key === 'ArrowDown') {
-        moveToNextRow(cell);
-      } else if (e.key === 'ArrowUp') {
-        moveToPrevRow(cell);
-      } else if (e.key === 'Enter') {
-        moveToNextRow(cell);
-      } else if (!['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) {
-        e.preventDefault();
-      }
-    });
-
-    cell.addEventListener('input', () => {
-      const val = cell.value.toUpperCase();
-      if (val && !['A', 'B', 'C', 'D', 'E'].includes(val)) {
-        cell.value = '';
+    if (!activeMicBtn) {
+      if (!storage.getOpenAIApiKey()) {
+        showToast('Configura tu llave de OpenAI (⚙️ arriba a la derecha) para usar la Corrección por Voz.', 'error');
         return;
       }
-
-      // Update class
-      const pregNum = parseInt(cell.dataset.pregunta);
-      const clave = ensayo.claveRespuestas[pregNum - 1]?.respuestaCorrecta?.toUpperCase();
-      cell.classList.remove('correct', 'incorrect', 'empty');
-      if (!val) cell.classList.add('empty');
-      else if (val === clave) cell.classList.add('correct');
-      else cell.classList.add('incorrect');
-
-      // Debounced save
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => saveAllResponses(), 300);
-
-      // Update row results
-      updateRowResults(cell.dataset.alumno);
-    });
-
-    cell.addEventListener('focus', () => {
-      cell.select();
-    });
-
-    // Prevent paste of non-valid chars
-    cell.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      const val = text.trim().toUpperCase().charAt(0);
-      if (['A', 'B', 'C', 'D', 'E'].includes(val)) {
-        cell.value = val;
-        cell.dispatchEvent(new Event('input'));
+      const success = await startRecording();
+      if (success) {
+        activeMicBtn = btn;
+        btn.classList.add('recording-active');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect></svg>`;
+        showToast('🎤 Escuchando... Haz clic de nuevo para detener y procesar.', 'info');
+      } else {
+        showToast('No se pudo acceder al micrófono.', 'error');
       }
-    });
+    } else {
+      // Stop recording
+      activeMicBtn = null;
+      btn.classList.remove('recording-active');
+      btn.style.opacity = '0.5';
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+
+      showToast('🧠 Procesando dictado con IA (Whisper)...', 'info');
+      try {
+        const audioBlob = await stopRecording();
+        if (audioBlob) {
+          const jsonArr = await processDictation(audioBlob, ensayo.totalPreguntas);
+          if (Array.isArray(jsonArr)) {
+            const alumnoId = btn.dataset.alumno;
+            let dictadas = 0;
+            jsonArr.forEach(item => {
+              if (item.p && typeof item.r === 'string') {
+                const c = document.querySelector(`.tab-cell[data-alumno="${alumnoId}"][data-pregunta="${item.p}"]`);
+                if (c) {
+                  c.value = item.r.toUpperCase();
+                  c.dispatchEvent(new Event('input', { bubbles: true }));
+                  dictadas++;
+                }
+              }
+            });
+            showToast(`¡Dictado procesado! ${dictadas} respuestas asignadas.`, 'success');
+          }
+        }
+      } catch (error) {
+        showToast(error.message, 'error');
+      } finally {
+        btn.style.opacity = '1';
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`;
+      }
+    }
+  });
+
+  // Handle cell input via event delegation
+  gridContainer.addEventListener('keydown', (e) => {
+    const cell = e.target;
+    if (!cell.classList.contains('tab-cell')) return;
+
+    const validKeys = ['a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E'];
+
+    if (validKeys.includes(e.key)) {
+      e.preventDefault();
+      cell.value = e.key.toUpperCase();
+      cell.dispatchEvent(new Event('input', { bubbles: true }));
+      moveToNextCell(cell);
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      cell.value = '';
+      cell.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) moveToPrevCell(cell);
+      else moveToNextCell(cell);
+    } else if (e.key === 'ArrowRight') {
+      moveToNextCell(cell);
+    } else if (e.key === 'ArrowLeft') {
+      moveToPrevCell(cell);
+    } else if (e.key === 'ArrowDown') {
+      moveToNextRow(cell);
+    } else if (e.key === 'ArrowUp') {
+      moveToPrevRow(cell);
+    } else if (e.key === 'Enter') {
+      moveToNextRow(cell);
+    } else if (!['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  gridContainer.addEventListener('input', (e) => {
+    const cell = e.target;
+    if (!cell.classList.contains('tab-cell')) return;
+
+    const val = cell.value.toUpperCase();
+    if (val && !['A', 'B', 'C', 'D', 'E'].includes(val)) {
+      cell.value = '';
+      return;
+    }
+
+    const pregNum = parseInt(cell.dataset.pregunta);
+    const clave = ensayo.claveRespuestas[pregNum - 1]?.respuestaCorrecta?.toUpperCase();
+    cell.classList.remove('correct', 'incorrect', 'empty');
+    if (!val) cell.classList.add('empty');
+    else if (val === clave) cell.classList.add('correct');
+    else cell.classList.add('incorrect');
+
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveAllResponses(), 300);
+
+    updateRowResults(cell.dataset.alumno);
+  });
+
+  gridContainer.addEventListener('focusin', (e) => {
+    if (e.target.classList.contains('tab-cell')) {
+      e.target.select();
+    }
+  });
+
+  gridContainer.addEventListener('paste', (e) => {
+    const cell = e.target;
+    if (!cell.classList.contains('tab-cell')) return;
+
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    const val = text.trim().toUpperCase().charAt(0);
+    if (['A', 'B', 'C', 'D', 'E'].includes(val)) {
+      cell.value = val;
+      cell.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   });
 
   function moveToNextCell(current) {
-    const allCells = Array.from(cells);
+    const allCells = Array.from(document.querySelectorAll('.tab-cell'));
     const idx = allCells.indexOf(current);
     if (idx < allCells.length - 1) {
       allCells[idx + 1].focus();
@@ -342,7 +351,7 @@ export function init(navigateTo, showToast) {
   }
 
   function moveToPrevCell(current) {
-    const allCells = Array.from(cells);
+    const allCells = Array.from(document.querySelectorAll('.tab-cell'));
     const idx = allCells.indexOf(current);
     if (idx > 0) {
       allCells[idx - 1].focus();

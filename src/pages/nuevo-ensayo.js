@@ -277,13 +277,21 @@ export function init(navigateTo, showToast) {
       let imagenesBase64 = [];
 
       if (file.type === 'application/pdf') {
+
+        // Lazy load pdfjsLib from CDN
+        if (typeof window.pdfjsLib === 'undefined') {
+          showToast('Descargando motor lector de PDF por primera vez...', 'info');
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('No se pudo cargar la librería PDF.js. Comprueba tu conexión a internet.'));
+            document.head.appendChild(script);
+          });
+        }
+
         showToast('Leyendo PDF y convirtiendo a imágenes...', 'info');
         const arrayBuffer = await file.arrayBuffer();
-
-        // Wait for pdfjsLib from CDN
-        if (typeof window.pdfjsLib === 'undefined') {
-          throw new Error('La librería PDF.js no ha cargado aún. Intenta nuevamente.');
-        }
 
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         const pdf = await loadingTask.promise;
