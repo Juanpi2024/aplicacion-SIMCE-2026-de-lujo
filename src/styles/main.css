@@ -577,7 +577,7 @@ tbody tr:last-child td {
   position: sticky;
   left: 40px;
   z-index: 20;
-  min-width: 180px;
+  min-width: 260px;
   text-align: left;
   padding-left: 0.75rem;
   background: var(--primary-dark);
@@ -610,11 +610,8 @@ tbody tr:last-child td {
   text-align: left;
   padding: 0 0.75rem;
   font-weight: 500;
-  min-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
+  min-width: 260px;
+  max-width: 320px;
   border-right: 2px solid var(--border);
 }
 
