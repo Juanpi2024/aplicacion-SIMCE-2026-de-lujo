@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <script type="module" crossorigin src="/aplicacion-SIMCE-2026-de-lujo/assets/index-aS-yIIrv.js"></script>
-  <link rel="stylesheet" crossorigin href="/aplicacion-SIMCE-2026-de-lujo/assets/index-BmwGZxm5.css">
+  <script type="module" crossorigin src="/aplicacion-SIMCE-2026-de-lujo/assets/index-t0mNu3aK.js"></script>
+  <link rel="stylesheet" crossorigin href="/aplicacion-SIMCE-2026-de-lujo/assets/index-CQsz1iig.css">
 </head>
 
 <body>
@@ -97,7 +97,18 @@
         </button>
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
         <div class="top-bar-actions">
-          <span class="school-badge" id="schoolBadge">Mi Colegio</span>
+          <button id="btnConfigAI" class="icon-btn" aria-label="Configuración IA"
+            title="Configurar Inteligencia Artificial"
+            style="background:none; border:none; cursor:pointer; color:var(--text-secondary); padding: 0.5rem; border-radius: 50%;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+          </button>
+          <span class="school-badge" id="schoolBadge" style="cursor: pointer; transition: background 0.2s;"
+            title="Editar Nombre del Colegio">Mi Colegio</span>
         </div>
       </header>
       <div class="page-content" id="pageContent">
@@ -118,6 +129,31 @@
       </div>
       <div class="modal-body" id="modalBody"></div>
       <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <!-- Modal de Configuración IA -->
+  <div class="modal" id="modalConfigAI"
+    style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 450px; margin: auto;">
+      <h3 class="card-title">Configuración de Inteligencia Artificial</h3>
+      <p style="color: var(--text-secondary); font-size: var(--fs-sm); margin: 0.5rem 0 1.5rem 0;">Añade tu clave
+        secreta de OpenAI de formato <code
+          style="background:var(--bg-app); padding:0.2rem; border-radius:3px;">sk-...</code> para habilitar
+        características avanzadas como dictado por voz.</p>
+
+      <div class="form-group">
+        <label class="form-label">OpenAI API Key (ChatGPT / Whisper)</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="password" id="inputAIKey" class="form-input" style="flex:1" placeholder="sk-..."
+            autocomplete="off" />
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button class="btn btn-secondary" id="btnCerrarConfigAI">Cancelar</button>
+        <button class="btn btn-primary" id="btnGuardarConfigAI">Guardar Llave</button>
+      </div>
     </div>
   </div>
 
