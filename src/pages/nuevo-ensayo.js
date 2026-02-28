@@ -181,7 +181,7 @@ export function init(navigateTo, showToast) {
     }
 
     try {
-      const res = await fetch('/ensayos_catalogo.json');
+      const res = await fetch(import.meta.env.BASE_URL + 'ensayos_catalogo.json');
       if (!res.ok) throw new Error('Catálogo no encontrado');
       const catalogo = await res.json();
       const modelo = catalogo.find(c => c.id === importId);

@@ -3,7 +3,7 @@
 // ============================================
 
 export async function render() {
-    return `
+  return `
     <div class="fade-in">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
@@ -54,17 +54,17 @@ export async function render() {
 }
 
 export async function init(navigateTo, showToast) {
-    const container = document.getElementById('bibliotecaContainer');
-    let catalogo = [];
+  const container = document.getElementById('bibliotecaContainer');
+  let catalogo = [];
 
-    try {
-        const res = await fetch('/ensayos_catalogo.json');
-        if (!res.ok) throw new Error('No se pudo cargar el catálogo.');
-        catalogo = await res.json();
-        renderCatalogo(catalogo);
-    } catch (err) {
-        console.error(err);
-        container.innerHTML = `
+  try {
+    const res = await fetch(import.meta.env.BASE_URL + 'ensayos_catalogo.json');
+    if (!res.ok) throw new Error('No se pudo cargar el catálogo.');
+    catalogo = await res.json();
+    renderCatalogo(catalogo);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon" style="color: var(--danger);">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -73,30 +73,30 @@ export async function init(navigateTo, showToast) {
         <div class="empty-state-desc">No se encontró el archivo de catálogo base. Ejecuta el script de procesamiento primero.</div>
       </div>
     `;
-        return;
-    }
+    return;
+  }
 
-    // Filtrado
-    const btnFiltrar = document.getElementById('btnFiltrar');
-    const fAsig = document.getElementById('filtroAsignatura');
-    const fNivel = document.getElementById('filtroNivel');
+  // Filtrado
+  const btnFiltrar = document.getElementById('btnFiltrar');
+  const fAsig = document.getElementById('filtroAsignatura');
+  const fNivel = document.getElementById('filtroNivel');
 
-    btnFiltrar?.addEventListener('click', () => {
-        const asigVal = fAsig.value;
-        const nivelVal = fNivel.value;
+  btnFiltrar?.addEventListener('click', () => {
+    const asigVal = fAsig.value;
+    const nivelVal = fNivel.value;
 
-        const filtered = catalogo.filter(item => {
-            const matchAsig = asigVal === 'todos' || item.asignatura === asigVal;
-            const matchNivel = nivelVal === 'todos' || item.nivel === nivelVal;
-            return matchAsig && matchNivel;
-        });
-
-        renderCatalogo(filtered);
+    const filtered = catalogo.filter(item => {
+      const matchAsig = asigVal === 'todos' || item.asignatura === asigVal;
+      const matchNivel = nivelVal === 'todos' || item.nivel === nivelVal;
+      return matchAsig && matchNivel;
     });
 
-    function renderCatalogo(data) {
-        if (data.length === 0) {
-            container.innerHTML = `
+    renderCatalogo(filtered);
+  });
+
+  function renderCatalogo(data) {
+    if (data.length === 0) {
+      container.innerHTML = `
         <div class="empty-state card">
           <div class="empty-state-icon">
              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -105,10 +105,10 @@ export async function init(navigateTo, showToast) {
           <div class="empty-state-desc">Prueba cambiando los filtros de búsqueda.</div>
         </div>
       `;
-            return;
-        }
+      return;
+    }
 
-        const html = data.map(item => `
+    const html = data.map(item => `
       <div class="ensayo-card" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <div class="ensayo-meta">
@@ -117,7 +117,7 @@ export async function init(navigateTo, showToast) {
           </div>
           <div class="ensayo-title" style="margin-bottom: 0.5rem; font-size: var(--fs-lg);">${item.titulo}</div>
           <p style="color: var(--text-secondary); font-size: var(--fs-sm); margin-bottom: 1rem;">
-             Archivo original: <a href="${item.archivo}" target="_blank" style="color: var(--accent); text-decoration: underline;">Descargar documento</a>
+             Archivo original: <a href="${import.meta.env.BASE_URL}${item.archivo.replace(/^\//, '')}" target="_blank" style="color: var(--accent); text-decoration: underline;">Descargar documento</a>
           </p>
         </div>
         
@@ -129,17 +129,17 @@ export async function init(navigateTo, showToast) {
       </div>
     `).join('');
 
-        container.innerHTML = `<div class="ensayo-grid">${html}</div>`;
+    container.innerHTML = `<div class="ensayo-grid">${html}</div>`;
 
-        // Botones de usar modelo
-        document.querySelectorAll('.btn-usar-ensayo').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const dId = btn.dataset.ensayoId;
-                // TODO: Guardar ensayoid temporalmente e ir a la página de nuevo-ensayo
-                // para que lo agarre como base
-                sessionStorage.setItem('biblio_modelo_seleccionado', dId);
-                navigateTo('nuevo-ensayo');
-            });
-        });
-    }
+    // Botones de usar modelo
+    document.querySelectorAll('.btn-usar-ensayo').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dId = btn.dataset.ensayoId;
+        // TODO: Guardar ensayoid temporalmente e ir a la página de nuevo-ensayo
+        // para que lo agarre como base
+        sessionStorage.setItem('biblio_modelo_seleccionado', dId);
+        navigateTo('nuevo-ensayo');
+      });
+    });
+  }
 }
