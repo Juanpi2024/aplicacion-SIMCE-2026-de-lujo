@@ -129,7 +129,188 @@
     "totalPreguntas": 30,
     "notaMinima": 2,
     "porcentajeDificultad": 60,
-    "claveRespuestas": []
+    "claveRespuestas": [
+      {
+        "pregunta": 1,
+        "respuestaCorrecta": "D",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 2,
+        "respuestaCorrecta": "D",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 3,
+        "respuestaCorrecta": "C",
+        "contenido": "Vocabulario",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 4,
+        "respuestaCorrecta": "B",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 5,
+        "respuestaCorrecta": "C",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 6,
+        "respuestaCorrecta": "D",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 7,
+        "respuestaCorrecta": "C",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 8,
+        "respuestaCorrecta": "A",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 9,
+        "respuestaCorrecta": "A",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 10,
+        "respuestaCorrecta": "B",
+        "contenido": "Vocabulario",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 11,
+        "respuestaCorrecta": "C",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 12,
+        "respuestaCorrecta": "C",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 13,
+        "respuestaCorrecta": "B",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 14,
+        "respuestaCorrecta": "D",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 15,
+        "respuestaCorrecta": "D",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 16,
+        "respuestaCorrecta": "D",
+        "contenido": "Vocabulario",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 17,
+        "respuestaCorrecta": "B",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 18,
+        "respuestaCorrecta": "B",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 19,
+        "respuestaCorrecta": "C",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 20,
+        "respuestaCorrecta": "D",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 21,
+        "respuestaCorrecta": "B",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 22,
+        "respuestaCorrecta": "B",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 23,
+        "respuestaCorrecta": "B",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 24,
+        "respuestaCorrecta": "D",
+        "contenido": "Vocabulario",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 25,
+        "respuestaCorrecta": "B",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 26,
+        "respuestaCorrecta": "A",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      },
+      {
+        "pregunta": 27,
+        "respuestaCorrecta": "A",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 28,
+        "respuestaCorrecta": "A",
+        "contenido": "Vocabulario",
+        "habilidad": "Localizar"
+      },
+      {
+        "pregunta": 29,
+        "respuestaCorrecta": "C",
+        "contenido": "Comprensión Lectora",
+        "habilidad": "Reflexionar"
+      },
+      {
+        "pregunta": 30,
+        "respuestaCorrecta": "A",
+        "contenido": "Vocabulario",
+        "habilidad": "Interpretar y relacionar"
+      }
+    ]
   },
   {
     "id": "ensayo_ensayo_01",

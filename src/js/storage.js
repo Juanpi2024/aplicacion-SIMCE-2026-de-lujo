@@ -35,6 +35,15 @@ export function setSchool(school) {
     localStorage.setItem(STORAGE_KEYS.SCHOOL, JSON.stringify(school));
 }
 
+// ---- Settings (API Keys, etc) ----
+export function getOpenAIApiKey() {
+    return localStorage.getItem('simce_openai_key') || '';
+}
+
+export function setOpenAIApiKey(key) {
+    localStorage.setItem('simce_openai_key', key.trim());
+}
+
 // ---- Cursos ----
 export function getCursos() {
     return getAll(STORAGE_KEYS.CURSOS);

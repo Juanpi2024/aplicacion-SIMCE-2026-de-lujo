@@ -8,7 +8,7 @@ import * as nuevoEnsayo from './pages/nuevo-ensayo.js';
 import * as tabulacion from './pages/tabulacion.js';
 import * as reportes from './pages/reportes.js';
 import * as biblioteca from './pages/biblioteca.js';
-import { getSchool, setSchool } from './js/storage.js';
+import { getSchool, setSchool, getOpenAIApiKey, setOpenAIApiKey } from './js/storage.js';
 
 // ---- Pages Registry ----
 const pages = {
@@ -142,22 +142,72 @@ function initModal() {
 }
 
 // ---- School Name ----
-function initSchool() {
+function updateSchoolBadge() {
   const school = getSchool();
   const badge = document.getElementById('schoolBadge');
   if (badge) {
     badge.textContent = school.name;
-    badge.addEventListener('click', () => {
-      const name = prompt('Nombre del colegio:', school.name);
-      if (name && name.trim()) {
-        setSchool({ name: name.trim() });
-        badge.textContent = name.trim();
-        showToast('Nombre del colegio actualizado', 'success');
-      }
-    });
     badge.style.cursor = 'pointer';
     badge.title = 'Click para cambiar nombre';
   }
+}
+
+function initSchoolBadge() {
+  updateSchoolBadge();
+  const badge = document.getElementById('schoolBadge');
+  badge?.addEventListener('click', () => {
+    const school = getSchool();
+    const body = `
+      <div class="form-group">
+        <label for="inputSchoolName">Nombre del Colegio:</label>
+        <input type="text" id="inputSchoolName" class="form-control" value="${school.name}">
+      </div>
+    `;
+    const footer = `
+      <button id="btnSaveSchool" class="btn btn-primary">Guardar</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+    `;
+    showModal('Editar Colegio', body, footer);
+
+    document.getElementById('btnSaveSchool').addEventListener('click', () => {
+      const newName = document.getElementById('inputSchoolName').value.trim();
+      if (newName) {
+        setSchool({ name: newName });
+        updateSchoolBadge();
+        closeModal();
+        showToast('Nombre guardado', 'success');
+      }
+    });
+  });
+}
+
+// ---- AI Config Modal ----
+function initConfigAI() {
+  const btnConfig = document.getElementById('btnConfigAI');
+  const modalAI = document.getElementById('modalConfigAI');
+  const btnClose = document.getElementById('btnCerrarConfigAI');
+  const btnSave = document.getElementById('btnGuardarConfigAI');
+  const inputKey = document.getElementById('inputAIKey');
+
+  btnConfig?.addEventListener('click', () => {
+    inputKey.value = getOpenAIApiKey();
+    modalAI.style.display = 'flex';
+  });
+
+  btnClose?.addEventListener('click', () => {
+    modalAI.style.display = 'none';
+  });
+
+  btnSave?.addEventListener('click', () => {
+    const key = inputKey.value.trim();
+    setOpenAIApiKey(key);
+    modalAI.style.display = 'none';
+    if (key) {
+      showToast('Llave API de OpenAI guardada exitosamente.', 'success');
+    } else {
+      showToast('Configuración AI deshabilitada.', 'info');
+    }
+  });
 }
 
 // ---- Init App ----
@@ -165,7 +215,10 @@ function initApp() {
   initSidebar();
   initNav();
   initModal();
-  initSchool();
+  initSchoolBadge();
+  initConfigAI();
+
+  // Initial render
   renderPage();
 }
 

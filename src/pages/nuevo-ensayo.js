@@ -133,6 +133,7 @@ export function render() {
 
 export function init(navigateTo, showToast) {
   let selectedCursoId = null;
+  let importedClaveRespuestas = null;
   const preset = storage.PRESETS.LENGUAJE;
 
   // Step navigation
@@ -199,6 +200,8 @@ export function init(navigateTo, showToast) {
         document.getElementById('inputNotaMinima').value = modelo.notaMinima || 2.0;
         document.getElementById('inputDificultad').value = modelo.porcentajeDificultad || 60;
 
+        importedClaveRespuestas = modelo.claveRespuestas && modelo.claveRespuestas.length > 0 ? modelo.claveRespuestas : null;
+
         // Visual feedback
         alertContainer.innerHTML = `
                   <div style="background: var(--success-bg); border: 1px solid var(--success); color: var(--success); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
@@ -227,36 +230,43 @@ export function init(navigateTo, showToast) {
       showToast('Ingresa el total de preguntas', 'error');
       return;
     }
-    buildClaveTable(total);
+    buildClaveTable(total, importedClaveRespuestas);
     showStep(3);
   });
 
   // Build answer key table
-  function buildClaveTable(total) {
+  function buildClaveTable(total, importedClave = null) {
     const tbody = document.getElementById('claveTableBody');
     let html = '';
     for (let i = 1; i <= total; i++) {
+      let r = '', c = '', h = '';
+      if (importedClave && importedClave[i - 1]) {
+        r = importedClave[i - 1].respuestaCorrecta || '';
+        c = importedClave[i - 1].contenido || '';
+        h = importedClave[i - 1].habilidad || '';
+      }
+
       html += `
         <tr>
           <td style="font-weight: 700; text-align: center; color: var(--text-muted);">${i}</td>
           <td>
             <select class="form-select form-input-sm clave-resp" data-pregunta="${i}">
-              <option value="">—</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-              <option value="E">E</option>
+              <option value="" ${r === '' ? 'selected' : ''}>—</option>
+              <option value="A" ${r === 'A' ? 'selected' : ''}>A</option>
+              <option value="B" ${r === 'B' ? 'selected' : ''}>B</option>
+              <option value="C" ${r === 'C' ? 'selected' : ''}>C</option>
+              <option value="D" ${r === 'D' ? 'selected' : ''}>D</option>
+              <option value="E" ${r === 'E' ? 'selected' : ''}>E</option>
             </select>
           </td>
           <td>
             <select class="form-select form-input-sm clave-cont" data-pregunta="${i}">
-              ${preset.contenidos.map(c => `<option value="${c}">${c}</option>`).join('')}
+              ${preset.contenidos.map(cont => `<option value="${cont}" ${c === cont ? 'selected' : ''}>${cont}</option>`).join('')}
             </select>
           </td>
           <td>
             <select class="form-select form-input-sm clave-hab" data-pregunta="${i}">
-              ${preset.habilidades.map(h => `<option value="${h}">${h}</option>`).join('')}
+              ${preset.habilidades.map(hab => `<option value="${hab}" ${h === hab ? 'selected' : ''}>${hab}</option>`).join('')}
             </select>
           </td>
         </tr>
