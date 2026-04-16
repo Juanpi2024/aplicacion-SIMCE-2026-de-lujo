@@ -249,9 +249,9 @@ export const PRESETS = {
 
 export function isMathematics(subject) {
     if (!subject) return false;
-    // The most simple and robust check: just look for 'MAT' anywhere
-    const s = String(subject).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return s.indexOf('MAT') !== -1;
+    // Extra-robust check: just look for 'mat' (case-insensitive) anywhere
+    const s = String(subject).toLowerCase();
+    return s.includes('mat');
 }
 
 export function getPresetBySubject(subject) {

@@ -262,7 +262,12 @@ export function init(navigateTo, showToast) {
       showToast('Ingresa el total de preguntas', 'error');
       return;
     }
-    const selectedSubject = document.getElementById('selectAsignatura').value;
+    // Explicitly grab the current selected value RIGHT NOW
+    const selectEl = document.getElementById('selectAsignatura');
+    const selectedSubject = selectEl ? selectEl.value : 'Lenguaje y Comunicación';
+    
+    console.log('Navegando a Paso 3 con asignatura:', selectedSubject);
+    
     buildClaveTable(total, importedClaveRespuestas, selectedSubject);
     showStep(3);
   });
