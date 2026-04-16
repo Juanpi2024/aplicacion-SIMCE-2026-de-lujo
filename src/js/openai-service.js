@@ -111,21 +111,21 @@ export async function generarPautaDesdeImagenes(imagenesBase64, totalPreguntas, 
 
     const isMath = storage.isMathematics(asignatura);
     const axesHint = isMath 
-        ? 'Ejes de Matemática: "Números y Operaciones", "Patrones y Álgebra", "Geometría", "Medición", "Datos y Probabilidades". Habilidades: "Conocer", "Aplicar", "Razonar".'
+        ? 'Ejes de Matemática: "Números", "Álgebra y Funciones", "Geometría", "Datos y Azar". Habilidades: "Resolver problemas", "Modelar", "Representar", "Argumentar y comunicar".'
         : 'Ejes de Lenguaje: "Comprensión lectora". Habilidades: "Localizar información", "Relacionar e interpretar información", "Reflexionar sobre el texto".';
 
     const promptText = `Eres un experto creador de pruebas SIMCE para el currículo educativo de Chile. A continuación te entrego imágenes de un ensayo de ${totalPreguntas} preguntas de la asignatura ${asignatura}.
 Tu tarea es resolver la prueba completa leyendo cuidadosamente los textos y alternativas presentadas en las imágenes. Para cada pregunta de 1 hasta ${totalPreguntas}, debes deducir contextualmente:
 - 'respuestaCorrecta': La alternativa correcta (A, B, C, D o E).
-- 'habilidad': Una de las siguientes: ${isMath ? '"Conocer", "Aplicar" o "Razonar"' : '"Localizar información", "Relacionar e interpretar información" o "Reflexionar sobre el texto"'}.
-- 'contenido': Uno de los siguientes ejes: ${isMath ? '"Números y Operaciones", "Patrones y Álgebra", "Geometría", "Medición" o "Datos y Probabilidades"' : '"Comprensión lectora"'}.
+- 'habilidad': Una de las siguientes: ${isMath ? '"Resolver problemas", "Modelar", "Representar" o "Argumentar y comunicar"' : '"Localizar información", "Relacionar e interpretar información" o "Reflexionar sobre el texto"'}.
+- 'contenido': Uno de los siguientes ejes: ${isMath ? '"Números", "Álgebra y Funciones", "Geometría" o "Datos y Azar"' : '"Comprensión lectora"'}.
 
 Contexto de la asignatura: ${axesHint}
 
 Devuelve ESTRICTAMENTE un arreglo JSON donde cada objeto tenga 'p' (número de pregunta), 'respuestaCorrecta', 'habilidad' y 'contenido'.
 IMPORTANTE: Asegúrate de llegar hasta la pregunta ${totalPreguntas}.
 Ejemplo de salida: 
-[{"p": 1, "respuestaCorrecta": "A", "habilidad": "${isMath ? 'Conocer' : 'Localizar información'}", "contenido": "${isMath ? 'Geometría' : 'Comprensión lectora'}"}]
+[{"p": 1, "respuestaCorrecta": "A", "habilidad": "${isMath ? 'Resolver problemas' : 'Localizar información'}", "contenido": "${isMath ? 'Geometría' : 'Comprensión lectora'}"}]
 SIN DELIMITADORES MARKDOWN COMO \`\`\`json.`;
 
     const contentArray = [{ type: 'text', text: promptText }];

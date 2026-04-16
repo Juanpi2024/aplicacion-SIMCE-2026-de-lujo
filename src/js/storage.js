@@ -233,16 +233,16 @@ export const PRESETS = {
     MATEMATICA: {
         asignatura: 'Matemática',
         contenidos: [
-            'Números y Operaciones',
-            'Patrones y Álgebra',
+            'Números',
+            'Álgebra y Funciones',
             'Geometría',
-            'Medición',
-            'Datos y Probabilidades'
+            'Datos y Azar'
         ],
         habilidades: [
-            'Conocer',
-            'Aplicar',
-            'Razonar',
+            'Resolver problemas',
+            'Modelar',
+            'Representar',
+            'Argumentar y comunicar',
         ],
     },
 };
