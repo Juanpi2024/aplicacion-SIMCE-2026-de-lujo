@@ -249,9 +249,8 @@ export const PRESETS = {
 
 export function isMathematics(subject) {
     if (!subject) return false;
-    // Extra-robust check: just look for 'mat' (case-insensitive) anywhere
     const s = String(subject).toLowerCase();
-    return s.includes('mat');
+    return s === 'mat' || s.includes('mat');
 }
 
 export function getPresetBySubject(subject) {

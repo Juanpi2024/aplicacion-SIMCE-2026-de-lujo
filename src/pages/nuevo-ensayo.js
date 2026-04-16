@@ -68,8 +68,8 @@ export function render() {
             <div class="form-group">
               <label class="form-label">Asignatura</label>
               <select class="form-select" id="selectAsignatura">
-                <option value="Lenguaje y Comunicación" selected>Lenguaje y Comunicación</option>
-                <option value="Matemática">Matemática</option>
+                <option value="len" selected>Lenguaje y Comunicación</option>
+                <option value="mat">Matemática</option>
               </select>
             </div>
             <div class="form-group">
@@ -155,7 +155,10 @@ export function init(navigateTo, showToast) {
   let currentStep = 1;
 
   function getCanonicalSubject(rawSubject) {
-    return storage.isMathematics(rawSubject) ? 'Matemática' : 'Lenguaje y Comunicación';
+    if (!rawSubject) return 'len';
+    const s = String(rawSubject).toLowerCase();
+    if (s === 'mat' || storage.isMathematics(s)) return 'mat';
+    return 'len';
   }
 
   // Step navigation
