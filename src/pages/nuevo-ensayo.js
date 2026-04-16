@@ -68,7 +68,8 @@ export function render() {
             <div class="form-group">
               <label class="form-label">Asignatura</label>
               <select class="form-select" id="selectAsignatura">
-                <option value="len" selected>Lenguaje y Comunicación</option>
+                <option value="" disabled selected>Selecciona asignatura...</option>
+                <option value="len">Lenguaje y Comunicación</option>
                 <option value="mat">Matemática</option>
               </select>
             </div>
@@ -265,13 +266,22 @@ export function init(navigateTo, showToast) {
       showToast('Ingresa el total de preguntas', 'error');
       return;
     }
-    // Explicitly grab the current selected value RIGHT NOW
+
     const selectEl = document.getElementById('selectAsignatura');
-    const selectedSubject = selectEl ? selectEl.value : 'Lenguaje y Comunicación';
+    if (!selectEl || !selectEl.value) {
+      showToast('Por favor, selecciona una asignatura', 'error');
+      selectEl.style.borderColor = 'var(--error)';
+      return;
+    }
+
+    const selectedSubject = selectEl.value;
+    const selectedText = selectEl.options[selectEl.selectedIndex].text;
     
-    console.log('Navegando a Paso 3 con asignatura:', selectedSubject);
+    // We try to catch math in value AND in text
+    const isActuallyMath = storage.isMathematics(selectedSubject) || storage.isMathematics(selectedText);
+    const asignaturaVal = isActuallyMath ? 'mat' : 'len';
     
-    buildClaveTable(total, importedClaveRespuestas, selectedSubject);
+    buildClaveTable(total, importedClaveRespuestas, asignaturaVal);
     showStep(3);
   });
 
