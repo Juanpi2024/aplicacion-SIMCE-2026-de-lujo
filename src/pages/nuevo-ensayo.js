@@ -155,12 +155,7 @@ export function init(navigateTo, showToast) {
   let importedClaveRespuestas = null;
   let currentStep = 1;
 
-  function getCanonicalSubject(rawSubject) {
-    if (!rawSubject) return 'len';
-    const s = String(rawSubject).toLowerCase();
-    if (s === 'mat' || storage.isMathematics(s)) return 'mat';
-    return 'len';
-  }
+
 
   // Step navigation
   function showStep(n) {
@@ -217,8 +212,8 @@ export function init(navigateTo, showToast) {
       if (modelo) {
         // Pre-fill form
         const selectAsig = document.getElementById('selectAsignatura');
-        // Always map imported value to one of the canonical app subjects
-        selectAsig.value = getCanonicalSubject(modelo.asignatura);
+        const asigVal = modelo.asignatura ? String(modelo.asignatura).toLowerCase() : 'len';
+        selectAsig.value = (asigVal === 'mat' || asigVal.includes('mat')) ? 'mat' : 'len';
 
         document.getElementById('inputTotalPreguntas').value = modelo.totalPreguntas || 30;
         document.getElementById('inputNotaMinima').value = modelo.notaMinima || 2.0;
@@ -275,10 +270,7 @@ export function init(navigateTo, showToast) {
     }
 
     const selectedSubject = selectEl.value;
-    const selectedText = selectEl.options[selectEl.selectedIndex].text;
-    
-    // We try to catch math in value AND in text
-    const isActuallyMath = storage.isMathematics(selectedSubject) || storage.isMathematics(selectedText);
+    const isActuallyMath = (selectedSubject === 'mat');
     const asignaturaVal = isActuallyMath ? 'mat' : 'len';
     
     buildClaveTable(total, importedClaveRespuestas, asignaturaVal);
@@ -410,17 +402,17 @@ export function init(navigateTo, showToast) {
   // Build answer key table
   function buildClaveTable(total, importedClave = null, subjectOverride = null) {
     const selectEl = document.getElementById('selectAsignatura');
-    const rawSubject = subjectOverride || (selectEl ? selectEl.value.trim() : '');
-    const asignaturaVal = getCanonicalSubject(rawSubject);
-    console.log('--- DEBUG CLAVE TABLE ---');
-    console.log('Raw subject value:', rawSubject);
-    console.log('Canonical subject:', asignaturaVal);
+    let rawSubject = subjectOverride;
+    if (!rawSubject) {
+       rawSubject = selectEl ? selectEl.value : 'len';
+    }
     
-    const isMath = storage.isMathematics(asignaturaVal);
-    console.log('Is Math (bool):', isMath);
+    // Explicitly inline subject resolution to avoid any minification bugs
+    const s = String(rawSubject).toLowerCase().trim();
+    const isMath = (s === 'mat' || s.includes('mat'));
+    const asignaturaVal = isMath ? 'mat' : 'len';
     
-    const preset = storage.getPresetBySubject(asignaturaVal);
-    console.log('Selected Preset:', preset.asignatura);
+    const preset = isMath ? storage.PRESETS.MATEMATICA : storage.PRESETS.LENGUAJE;
     const badgeInfo = document.getElementById('presetBadgeInfo');
     if (badgeInfo) {
       badgeInfo.innerHTML = `
@@ -503,7 +495,7 @@ export function init(navigateTo, showToast) {
 
     const ensayo = storage.saveEnsayo({
       cursoId: selectedCursoId,
-      asignatura: getCanonicalSubject(document.getElementById('selectAsignatura').value),
+      asignatura: (document.getElementById('selectAsignatura').value === 'mat') ? 'mat' : 'len',
       numero: parseInt(document.getElementById('inputNumeroEnsayo').value) || 1,
       totalPreguntas: claveRespuestas.length,
       notaMinima: parseFloat(document.getElementById('inputNotaMinima').value) || 2.0,
